@@ -1,0 +1,19 @@
+/* assets/css/style.css */
+:root {
+  --primary-color: #4361ee;
+  --light-bg: #f8f9fa;
+  --dark-bg: #212529;
+  --light-text: #212529;
+  --dark-text: #f8f9fa;
+}
+body.light-mode { background: var(--light-bg); color: var(--light-text); }
+body.dark-mode { background: var(--dark-bg); color: var(--dark-text); }
+.dark-mode .card { background:#2c3034; border-color:#444; color:var(--dark-text); }
+.task-card { transition: transform .15s; cursor: grab; }
+.task-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+.priority-high { border-left: 4px solid #dc3545; }
+.priority-medium { border-left: 4px solid #ffc107; }
+.priority-low { border-left: 4px solid #28a745; }
+.completed { text-decoration: line-through; opacity:0.7; }
+.card.dragging { opacity:0.6; }
+.card.drag-over { outline: 2px dashed #888; }

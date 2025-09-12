@@ -1,53 +1,209 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Calendario de Tareas</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TaskMaster - Calendario</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/style.css">
+  <style>
+    :root { --primary-color: #4361ee; --light-bg: #f8f9fa; --dark-bg: #212529; --light-text: #f8f9fa; --dark-text: #212529; }
+    body { transition: background-color 0.3s, color 0.3s; }
+    body.light-mode { background-color: var(--light-bg); color: var(--dark-text); }
+    body.dark-mode { background-color: var(--dark-bg); color: var(--light-text); }
+    .dark-mode #calendar { background-color: #2c3034; color: var(--light-text); }
+    .theme-switch { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+    #calendar { background-color: white; border-radius: 8px; padding: 20px; }
+  </style>
 </head>
-<body>
-  <div class="container">
-    <h1 class="mb-4 text-center">Calendario de Tareas</h1>
+<body class="light-mode">
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--primary-color);">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <i class="bi bi-check-circle-fill me-2"></i>TaskMaster
+      </a>
+      <div class="d-flex">
+        <a class="btn btn-outline-light me-2" href="tareas.html">Volver a Tareas</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div class="row mb-4">
+      <div class="col-md-6"><h2>Calendario de Tareas</h2></div>
+      <div class="col-md-6 text-end">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">
+          <i class="bi bi-plus-circle"></i> Nueva Tarea
+        </button>
+      </div>
+    </div>
     <div id="calendar"></div>
   </div>
 
+  <!-- Modal (mismo formulario) -->
+  <div class="modal fade" id="taskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Nueva Tarea</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="taskForm">
+            <input type="hidden" id="taskId">
+            <div class="mb-3">
+              <label for="taskTitle" class="form-label">Título</label>
+              <input type="text" class="form-control" id="taskTitle" required>
+            </div>
+            <div class="mb-3">
+              <label for="taskDescription" class="form-label">Descripción</label>
+              <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="taskDueDate" class="form-label">Fecha de vencimiento</label>
+                <input type="datetime-local" class="form-control" id="taskDueDate">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="taskPriority" class="form-label">Prioridad</label>
+                <select class="form-select" id="taskPriority">
+                  <option value="low">Baja</option>
+                  <option value="medium" selected>Media</option>
+                  <option value="high">Alta</option>
+                </select>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="taskTags" class="form-label">Etiquetas (separadas por comas)</label>
+              <input type="text" class="form-control" id="taskTags" placeholder="trabajo, personal, urgente">
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="taskCompleted">
+              <label class="form-check-label" for="taskCompleted">Tarea completada</label>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="saveTask">Guardar Tarea</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary theme-switch" id="theme-switch">
+    <i class="bi bi-moon-fill"></i>
+  </button>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
+
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      let calendarEl = document.getElementById('calendar');
+    document.addEventListener('DOMContentLoaded', function() {
+      let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      let editingTaskId = null;
+      const taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
+      const saveTaskBtn = document.getElementById('saveTask');
+      const themeSwitch = document.getElementById('theme-switch');
+      const calendarEl = document.getElementById('calendar');
+      let calendar;
 
-      let calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        editable: true,
-        selectable: true,
-        locale: 'es',
-        headerToolbar: {
-          left: 'prev,next today',
-          center: 'title',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-        select: function (info) {
-          let title = prompt("Escribe la tarea:");
-          if (title) {
-            calendar.addEvent({
-              title: title,
-              start: info.startStr,
-              end: info.endStr,
-              allDay: info.allDay
-            });
+      init();
+
+      function init() {
+        initCalendar();
+        setupEvents();
+        checkDarkModePreference();
+      }
+
+      function setupEvents() {
+        saveTaskBtn.addEventListener('click', saveTask);
+        themeSwitch.addEventListener('click', toggleDarkMode);
+      }
+
+      function initCalendar() {
+        calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          editable: true,
+          selectable: true,
+          locale: 'es',
+          headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+          select: function(info) {
+            document.getElementById('taskDueDate').value = info.startStr + 'T00:00';
+            document.getElementById('modalTitle').textContent = 'Nueva Tarea';
+            taskModal.show();
+          },
+          eventClick: function(info) {
+            // find task by id
+            const id = info.event.extendedProps.taskId;
+            const t = tasks.find(x => x.id === id);
+            if (t) openEdit(t);
           }
-          calendar.unselect();
-        },
-        eventClick: function (info) {
-          if (confirm("¿Eliminar esta tarea?")) {
-            info.event.remove();
+        });
+        calendar.render();
+        loadEventsToCalendar();
+      }
+
+      function loadEventsToCalendar() {
+        calendar.removeAllEvents();
+        tasks.forEach(t => {
+          if (t.dueDate) {
+            calendar.addEvent({ title: t.title, start: t.dueDate, allDay: true, extendedProps: { taskId: t.id, priority: t.priority } });
           }
+        });
+      }
+
+      function saveTask() {
+        const title = document.getElementById('taskTitle').value;
+        const description = document.getElementById('taskDescription').value;
+        const dueDate = document.getElementById('taskDueDate').value;
+        const priority = document.getElementById('taskPriority').value;
+        const tagsInput = document.getElementById('taskTags').value;
+        const completed = document.getElementById('taskCompleted').checked;
+        if (!title) { alert('El título es obligatorio'); return; }
+        const tags = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag);
+        if (editingTaskId) {
+          const idx = tasks.findIndex(t => t.id === editingTaskId);
+          if (idx !== -1) {
+            tasks[idx] = { ...tasks[idx], title, description, dueDate, priority, tags, completed };
+          }
+          editingTaskId = null;
+        } else {
+          tasks.push({ id: Date.now().toString(), title, description, dueDate, priority, tags, completed, createdAt: new Date().toISOString() });
         }
-      });
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        taskModal.hide();
+        // refrescar calendario
+        loadEventsToCalendar();
+        document.getElementById('taskForm').reset();
+      }
 
-      calendar.render();
+      function openEdit(task) {
+        editingTaskId = task.id;
+        document.getElementById('taskTitle').value = task.title;
+        document.getElementById('taskDescription').value = task.description || '';
+        document.getElementById('taskDueDate').value = task.dueDate || '';
+        document.getElementById('taskPriority').value = task.priority;
+        document.getElementById('taskTags').value = task.tags ? task.tags.join(', ') : '';
+        document.getElementById('taskCompleted').checked = task.completed || false;
+        document.getElementById('modalTitle').textContent = 'Editar Tarea';
+        taskModal.show();
+      }
+
+      function toggleDarkMode() {
+        const body = document.body;
+        const isDarkMode = body.classList.contains('dark-mode');
+        if (isDarkMode) {
+          body.classList.remove('dark-mode'); body.classList.add('light-mode'); themeSwitch.innerHTML = '<i class="bi bi-moon-fill"></i>'; localStorage.setItem('theme','light');
+        } else {
+          body.classList.remove('light-mode'); body.classList.add('dark-mode'); themeSwitch.innerHTML = '<i class="bi bi-sun-fill"></i>'; localStorage.setItem('theme','dark');
+        }
+      }
+      function checkDarkModePreference(){
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') { document.body.classList.remove('light-mode'); document.body.classList.add('dark-mode'); themeSwitch.innerHTML = '<i class="bi bi-sun-fill"></i>'; }
+      }
     });
   </script>
 </body>

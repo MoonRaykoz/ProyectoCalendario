@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TaskMaster - Tareas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --success-color: #4cc9f0;
+      --light-bg: #f8f9fa;
+      --dark-bg: #212529;
+      --light-text: #f8f9fa;
+      --dark-text: #212529;
+    }
+    body { transition: background-color 0.3s, color 0.3s; }
+    body.light-mode { background-color: var(--light-bg); color: var(--dark-text); }
+    body.dark-mode { background-color: var(--dark-bg); color: var(--light-text); }
+    .dark-mode .card { background-color: #2c3034; border-color: #444; }
+    .dark-mode .form-control { background-color: #2c3034; color: var(--light-text); border-color: #444; }
+    .task-card { transition: transform 0.2s; cursor: move; }
+    .task-card:hover { transform: translateY(-5px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .priority-high { border-left: 4px solid #dc3545; }
+    .priority-medium { border-left: 4px solid #ffc107; }
+    .priority-low { border-left: 4px solid #28a745; }
+    .completed { text-decoration: line-through; opacity: 0.7; }
+    .theme-switch { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+  </style>
+</head>
+<body class="light-mode">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--primary-color);">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <i class="bi bi-check-circle-fill me-2"></i>TaskMaster
+      </a>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="#">Tareas</a>
+          </li>
+          <li class="nav-item">
+            <!-- link al calendario separado -->
+            <a class="nav-link" href="calendario.html">
+              <i class="bi bi-calendar-event me-1"></i>Calendario
+            </a>
+          </li>
+        </ul>
+        <form class="d-flex me-2">
+          <input class="form-control me-2" type="search" placeholder="Buscar tareas..." id="search-input">
+          <button class="btn btn-outline-light" type="button" id="search-btn">
+            <i class="bi bi-search"></i>
+          </button>
+        </form>
+        <div class="d-flex">
+          <button class="btn btn-outline-light me-2" id="export-btn">
+            <i class="bi bi-download"></i> Exportar
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle"></i> Usuario
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#">Mi perfil</a></li>
+              <li><a class="dropdown-item" href="#">Cerrar sesión</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <div id="tasks-view">
+      <div class="row mb-4">
+        <div class="col-md-6"><h2>Mis Tareas</h2></div>
+        <div class="col-md-6 text-end">
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#taskModal">
+            <i class="bi bi-plus-circle"></i> Nueva Tarea
+          </button>
+          <div class="btn-group ms-2">
+            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="bi bi-filter"></i> Filtrar
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item filter-option" href="#" data-filter="all">Todas</a></li>
+              <li><a class="dropdown-item filter-option" href="#" data-filter="pending">Pendientes</a></li>
+              <li><a class="dropdown-item filter-option" href="#" data-filter="completed">Completadas</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item filter-option" href="#" data-filter="high">Alta prioridad</a></li>
+              <li><a class="dropdown-item filter-option" href="#" data-filter="medium">Media prioridad</a></li>
+              <li><a class="dropdown-item filter-option" href="#" data-filter="low">Baja prioridad</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" id="tasks-container"></div>
+    </div>
+  </div>
+
+  <!-- Modal para crear/editar tarea -->
+  <div class="modal fade" id="taskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">Nueva Tarea</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="taskForm">
+            <input type="hidden" id="taskId">
+            <div class="mb-3">
+              <label for="taskTitle" class="form-label">Título</label>
+              <input type="text" class="form-control" id="taskTitle" required>
+            </div>
+            <div class="mb-3">
+              <label for="taskDescription" class="form-label">Descripción</label>
+              <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="taskDueDate" class="form-label">Fecha de vencimiento</label>
+                <input type="datetime-local" class="form-control" id="taskDueDate">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="taskPriority" class="form-label">Prioridad</label>
+                <select class="form-select" id="taskPriority">
+                  <option value="low">Baja</option>
+                  <option value="medium" selected>Media</option>
+                  <option value="high">Alta</option>
+                </select>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="taskTags" class="form-label">Etiquetas (separadas por comas)</label>
+              <input type="text" class="form-control" id="taskTags" placeholder="trabajo, personal, urgente">
+            </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="taskCompleted">
+              <label class="form-check-label" for="taskCompleted">Tarea completada</label>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="saveTask">Guardar Tarea</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón de cambio de tema -->
+  <button class="btn btn-primary theme-switch" id="theme-switch">
+    <i class="bi bi-moon-fill"></i>
+  </button>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Variables globales
+      let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      let currentFilter = 'all';
+      let editingTaskId = null;
+      const tasksContainer = document.getElementById('tasks-container');
+      const searchInput = document.getElementById('search-input');
+      const searchBtn = document.getElementById('search-btn');
+      const themeSwitch = document.getElementById('theme-switch');
+      const exportBtn = document.getElementById('export-btn');
+      const taskForm = document.getElementById('taskForm');
+      const saveTaskBtn = document.getElementById('saveTask');
+      const taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
+
+      init();
+
+      function init() {
+        renderTasks();
+        setupEventListeners();
+        checkDarkModePreference();
+      }
+
+      function setupEventListeners() {
+        searchBtn.addEventListener('click', handleSearch);
+        searchInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleSearch(); });
+        themeSwitch.addEventListener('click', toggleDarkMode);
+        document.querySelectorAll('.filter-option').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.preventDefault();
+            currentFilter = e.target.dataset.filter;
+            renderTasks();
+          });
+        });
+        saveTaskBtn.addEventListener('click', saveTask);
+        exportBtn.addEventListener('click', exportTasks);
+      }
+
+      function renderTasks() {
+        tasksContainer.innerHTML = '';
+        let filteredTasks = filterTasks(tasks, currentFilter);
+        if (filteredTasks.length === 0) {
+          tasksContainer.innerHTML = `
+            <div class="col-12 text-center py-5">
+              <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+              <p class="mt-3">No hay tareas para mostrar</p>
+            </div>
+          `;
+          return;
+        }
+        filteredTasks.forEach(task => {
+          const taskElement = createTaskElement(task);
+          tasksContainer.appendChild(taskElement);
+        });
+      }
+
+      function filterTasks(tasksArr, filter) {
+        if (filter === 'all') return tasksArr;
+        if (filter === 'pending') return tasksArr.filter(task => !task.completed);
+        if (filter === 'completed') return tasksArr.filter(task => task.completed);
+        if (['high', 'medium', 'low'].includes(filter)) return tasksArr.filter(task => task.priority === filter);
+        return tasksArr;
+      }
+
+      function createTaskElement(task) {
+        const col = document.createElement('div');
+        col.className = 'col-md-4 mb-3';
+        const priorityClass = `priority-${task.priority}`;
+        const completedClass = task.completed ? 'completed' : '';
+        col.innerHTML = `
+          <div class="card task-card ${priorityClass} ${completedClass}" data-task-id="${task.id}">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <h5 class="card-title">${escapeHtml(task.title)}</h5>
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item edit-task" href="#">Editar</a></li>
+                    <li><a class="dropdown-item delete-task" href="#">Eliminar</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item toggle-complete" href="#">${task.completed ? 'Marcar como pendiente' : 'Marcar como completada'}</a></li>
+                  </ul>
+                </div>
+              </div>
+              <p class="card-text">${escapeHtml(task.description || 'Sin descripción')}</p>
+              ${task.dueDate ? `<p class="card-text"><small class="text-muted">Vence: ${formatDate(task.dueDate)}</small></p>` : ''}
+              ${task.tags && task.tags.length > 0 ? `<div class="mt-2">${task.tags.map(tag => `<span class="badge bg-secondary me-1">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
+            </div>
+          </div>
+        `;
+        const card = col.querySelector('.card');
+        card.querySelector('.edit-task').addEventListener('click', (e) => { e.preventDefault(); editTask(task.id); });
+        card.querySelector('.delete-task').addEventListener('click', (e) => { e.preventDefault(); deleteTask(task.id); });
+        card.querySelector('.toggle-complete').addEventListener('click', (e) => { e.preventDefault(); toggleTaskComplete(task.id); });
+        // Drag & drop
+        card.draggable = true;
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+        return col;
+      }
+
+      function handleSearch() {
+        const searchTerm = searchInput.value.toLowerCase();
+        if (!searchTerm) { renderTasks(); return; }
+        const filteredTasks = tasks.filter(task => 
+          task.title.toLowerCase().includes(searchTerm) || 
+          (task.description && task.description.toLowerCase().includes(searchTerm)) ||
+          (task.tags && task.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+        );
+        tasksContainer.innerHTML = '';
+        if (filteredTasks.length === 0) {
+          tasksContainer.innerHTML = `<div class="col-12 text-center py-5"><i class="bi bi-search" style="font-size: 3rem;"></i><p class="mt-3">No se encontraron tareas</p></div>`;
+          return;
+        }
+        filteredTasks.forEach(task => tasksContainer.appendChild(createTaskElement(task)));
+      }
+
+      function handleDragStart(e) {
+        e.dataTransfer.setData('text/plain', e.target.closest('.card').dataset.taskId);
+        e.target.classList.add('dragging');
+      }
+      function handleDragEnd(e) { e.target.classList.remove('dragging'); }
+
+      function saveTask() {
+        const title = document.getElementById('taskTitle').value;
+        const description = document.getElementById('taskDescription').value;
+        const dueDate = document.getElementById('taskDueDate').value;
+        const priority = document.getElementById('taskPriority').value;
+        const tagsInput = document.getElementById('taskTags').value;
+        const completed = document.getElementById('taskCompleted').checked;
+        if (!title) { alert('El título es obligatorio'); return; }
+        const tags = tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag);
+        if (editingTaskId) {
+          const index = tasks.findIndex(task => task.id === editingTaskId);
+          if (index !== -1) {
+            tasks[index] = { ...tasks[index], title, description, dueDate, priority, tags, completed };
+          }
+          editingTaskId = null;
+        } else {
+          const newTask = { id: Date.now().toString(), title, description, dueDate, priority, tags, completed, createdAt: new Date().toISOString() };
+          tasks.push(newTask);
+        }
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        taskModal.hide();
+        renderTasks();
+        taskForm.reset();
+      }
+
+      function editTask(id) {
+        const task = tasks.find(t => t.id === id); if (!task) return;
+        editingTaskId = id;
+        document.getElementById('taskTitle').value = task.title;
+        document.getElementById('taskDescription').value = task.description || '';
+        document.getElementById('taskDueDate').value = task.dueDate || '';
+        document.getElementById('taskPriority').value = task.priority;
+        document.getElementById('taskTags').value = task.tags ? task.tags.join(', ') : '';
+        document.getElementById('taskCompleted').checked = task.completed || false;
+        document.getElementById('modalTitle').textContent = 'Editar Tarea';
+        taskModal.show();
+      }
+
+      function deleteTask(id) {
+        if (!confirm('¿Estás seguro de que quieres eliminar esta tarea?')) return;
+        tasks = tasks.filter(task => task.id !== id);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        renderTasks();
+      }
+
+      function toggleTaskComplete(id) {
+        const task = tasks.find(t => t.id === id);
+        if (task) { task.completed = !task.completed; localStorage.setItem('tasks', JSON.stringify(tasks)); renderTasks(); }
+      }
+
+      function exportTasks() {
+        alert('Funcionalidad de exportación (CSV/PDF) se implementará con backend. Por ahora descarga manual desde localStorage si lo deseas.');
+      }
+
+      function toggleDarkMode() {
+        const body = document.body;
+        const isDarkMode = body.classList.contains('dark-mode');
+        if (isDarkMode) {
+          body.classList.remove('dark-mode'); body.classList.add('light-mode'); themeSwitch.innerHTML = '<i class="bi bi-moon-fill"></i>'; localStorage.setItem('theme','light');
+        } else {
+          body.classList.remove('light-mode'); body.classList.add('dark-mode'); themeSwitch.innerHTML = '<i class="bi bi-sun-fill"></i>'; localStorage.setItem('theme','dark');
+        }
+      }
+      function checkDarkModePreference(){
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') { document.body.classList.remove('light-mode'); document.body.classList.add('dark-mode'); themeSwitch.innerHTML = '<i class="bi bi-sun-fill"></i>'; }
+      }
+
+      function formatDate(dateString) {
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('es-ES', options);
+      }
+      function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];}); }
+    });
+  </script>
+</body>
+</html>
