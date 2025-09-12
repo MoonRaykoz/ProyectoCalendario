@@ -1,0 +1,119 @@
+<?php
+// calendario.php
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Página del Calendario</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.css" rel="stylesheet">
+  <style>
+    body {
+      padding: 2rem;
+      background-color: #f8f9fa;
+    }
+    #calendar {
+      background: white;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mb-4 text-center">📅 Chrono ⌛</h1>
+    <p class="text-center">Las tareas aparecen en su fecha correspondiente.<br>
+      Opciones: arrastrar para cambiar fecha, clic para abrir detalle.</p>
+
+    <div id="calendar"></div>
+  </div>
+
+  <div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="taskModalLabel">Detalle de la tarea</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p id="taskTitle"></p>
+          <p><strong>Inicio:</strong> <span id="taskStart"></span></p>
+          <p><strong>Fin:</strong> <span id="taskEnd"></span></p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger" id="deleteTaskBtn">Eliminar</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      let calendarEl = document.getElementById('calendar');
+      let selectedEvent = null;
+
+      let calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        editable: true,
+        selectable: true,
+        locale: 'es',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: '../Script/getEvents.php',
+        select: function (info) {
+          let title = prompt("Escribe la tarea:");
+          if (title) {
+            fetch('../Script/addEvent.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                title: title,
+                start: info.startStr,
+                end: info.endStr
+              })
+            }).then(() => calendar.refetchEvents());
+          }
+          calendar.unselect();
+        },
+        eventClick: function (info) {
+          selectedEvent = info.event;
+          document.getElementById('taskTitle').textContent = info.event.title;
+          document.getElementById('taskStart').textContent = info.event.start.toLocaleString();
+          document.getElementById('taskEnd').textContent = info.event.end ? info.event.end.toLocaleString() : 'No definido';
+
+          let taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
+          taskModal.show();
+        },
+        eventDrop: function (info) {
+          alert("La tarea '" + info.event.title + "' se movió a " + info.event.start.toLocaleString());
+        }
+      });
+
+      calendar.render();
+
+      document.getElementById('deleteTaskBtn').addEventListener('click', function () {
+        if (selectedEvent) {
+          fetch('deleteEvent.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: selectedEvent.id })
+          }).then(() => {
+            selectedEvent.remove();
+            let modalEl = document.getElementById('taskModal');
+            let modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
