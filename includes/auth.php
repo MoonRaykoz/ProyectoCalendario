@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
 // Incluye la conexión a la base de datos
 require_once __DIR__ . '/conexion.php';
 
-// Buscar usuario por email, y si lo encuentra devuelve el array con todo los datos
+// Buscar usuario por email, y si lo encuentra devuelve el array con todo los datos de ese usuario
 function find_user_by_email(string $email): ?array {
   global $mysqli;
   $stmt = $mysqli->prepare('SELECT id, nombre, email, password_hash, tema FROM usuarios WHERE email=?');
