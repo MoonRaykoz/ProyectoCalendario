@@ -4,48 +4,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chronos — Organiza tu día sin estrés</title>
+
+ 
   <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/litera/bootstrap.min.css" rel="stylesheet">
   <link href="../assets/style.css" rel="stylesheet">
-  <style>
-   
-    .hero {
-      background: linear-gradient(180deg, rgba(0,123,255,.08), rgba(0,0,0,0));
-      border-bottom: 1px solid rgba(0,0,0,.05);
-    }
-    .badge-soft {
-      background: rgba(13,110,253,.1);
-      color: #0d6efd;
-      border-radius: 999px;
-      padding: .35rem .75rem;
-      font-weight: 600;
-      font-size: .9rem;
-    }
-    .shadow-soft { box-shadow: 0 10px 30px rgba(0,0,0,.08); }
-    .feature-icon {
-      width: 48px; height: 48px; border-radius: 12px;
-      display: inline-flex; align-items: center; justify-content: center;
-      background: rgba(13,110,253,.1);
-    }
-    .check { color: #198754; font-weight: 700; }
-    .screenshot {
-      background: linear-gradient(135deg, #f8f9fa, #eef3ff);
-      border: 1px solid rgba(0,0,0,.08);
-      border-radius: 1rem;
-      min-height: 260px;
-    }
-    .logos img { height: 26px; opacity:.7; margin: 0 10px; }
-    .faq button { text-align: left; }
-    .pricing .card { border: 1px solid rgba(0,0,0,.08); }
-    .divider { height: 1px; background: rgba(0,0,0,.08); }
-  </style>
+    <link rel="icon" type="image/png" sizes="32x32" href="/ProyectoCalendario/assets/icon.png">
+
+  <meta name="description" content="Chronos: gestor de tareas y proyectos. Organiza tu tiempo con recordatorios inteligentes y paneles de progreso.">
+  <meta property="og:title" content="Chronos — Organiza tu día sin estrés">
+  <meta property="og:description" content="Crea listas, asigna fechas y recibe recordatorios. Menos caos, más resultados.">
+  <meta property="og:type" content="website">
 </head>
 <body class="bg-body-tertiary">
 
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg bg-body py-3">
+<nav class="navbar navbar-expand-lg bg-body border-bottom py-3">
   <div class="container">
-    <a class="navbar-brand fw-bold" href="#">Chronos</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+    
+ 
+   <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+    <img src="/ProyectoCalendario/assets/chronoBig.png" alt="Chronos logo" width="auto" height="100" class="me-2">
+    
+   </a>
+  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div id="nav" class="collapse navbar-collapse">
@@ -56,28 +37,29 @@
         <li class="nav-item"><a class="nav-link" href="#faq">Preguntas</a></li>
       </ul>
       <div class="d-flex gap-2">
-        <!-- Ajusta rutas a tus páginas reales -->
-        <a class="btn btn-outline-primary" href="login.php">Iniciar sesión</a>
-        <a class="btn btn-primary" href="register.php">Crear cuenta</a>
+        <a class="btn btn-outline-info" href="login.php">Iniciar sesión</a>
+        <a class="btn btn-info text-white" href="register.php">Crear cuenta</a>
       </div>
     </div>
   </div>
 </nav>
 
-<!-- HERO -->
+
 <section class="hero">
   <div class="container py-5">
     <div class="row align-items-center gy-4">
       <div class="col-lg-6">
         <span class="badge-soft">Tu tiempo, bajo control</span>
-        <h1 class="display-5 fw-bold mt-3">Organiza tus tareas y proyectos con <span class="text-primary">Chronos</span></h1>
+        <h1 class="display-5 fw-bold mt-3">
+          Organiza tus tareas y proyectos con <span class="text-info">Chronos</span>
+        </h1>
         <p class="lead text-secondary mt-3">
           Crea listas, asigna fechas límite, recibe recordatorios y enfócate en lo importante.
           Menos caos, más resultados.
         </p>
-        <div class="d-flex gap-2 mt-3">
-          <a href="register.php" class="btn btn-primary btn-lg">Comenzar gratis</a>
-          <a href="#features" class="btn btn-outline-primary btn-lg">Ver características</a>
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <a href="register.php" class="btn btn-info btn-lg text-white">Comenzar gratis</a>
+          <a href="#features" class="btn btn-outline-info btn-lg">Ver características</a>
         </div>
         <div class="d-flex align-items-center gap-3 mt-4 text-secondary">
           <div class="d-flex align-items-center">
@@ -88,19 +70,19 @@
           </div>
         </div>
         <div class="logos mt-4">
-          <!-- Coloca logos reales si quieres -->
           <img src="data:image/svg+xml,%3Csvg width='120' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='0' y='18' font-size='18'%3EProductHunt%3C/text%3E%3C/svg%3E" alt="Logo 1">
           <img src="data:image/svg+xml,%3Csvg width='90' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='0' y='18' font-size='18'%3EDev.to%3C/text%3E%3C/svg%3E" alt="Logo 2">
           <img src="data:image/svg+xml,%3Csvg width='110' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='0' y='18' font-size='18'%3EPocket%3C/text%3E%3C/svg%3E" alt="Logo 3">
         </div>
       </div>
+
       <div class="col-lg-6">
         <div class="screenshot p-3 shadow-soft">
-          <!-- Reemplaza este bloque por una captura real de tu app -->
+          
           <div class="bg-white h-100 w-100 rounded-3 p-3 shadow-sm">
             <div class="d-flex justify-content-between align-items-center">
               <div class="fw-semibold">Mis tareas de hoy</div>
-              <span class="badge text-bg-primary">3 pendientes</span>
+              <span class="badge text-bg-info">3 pendientes</span>
             </div>
             <div class="divider my-3"></div>
             <div class="d-flex align-items-start gap-3 mb-3">
@@ -125,16 +107,32 @@
               </div>
             </div>
             <div class="text-center mt-4">
-              <a href="register.php" class="btn btn-primary">Prueba Chronos</a>
+              <a href="register.php" class="btn btn-info text-white">Prueba Chronos</a>
             </div>
           </div>
         </div>
       </div>
-    </div><!-- row -->
+    </div>
   </div>
 </section>
 
-<!-- FEATURES -->
+
+<section class="py-4">
+  <div class="container">
+    <div class="cta-band p-4 p-md-5 d-flex flex-column flex-lg-row align-items-center justify-content-between gap-3">
+      <div>
+        <h3 class="fw-bold mb-1">Enfócate en lo que importa</h3>
+        <p class="mb-0 text-secondary">Paneles claros, recordatorios puntuales y colaboración sencilla.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-info text-white btn-lg" href="register.php">Crear cuenta</a>
+        <a class="btn btn-outline-info btn-lg" href="#how">Ver cómo funciona</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 <section id="features" class="py-5">
   <div class="container">
     <div class="text-center mb-4">
@@ -144,7 +142,7 @@
 
     <div class="row g-4">
       <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-soft">
+        <div class="card h-100 shadow-soft hover-lift">
           <div class="card-body">
             <div class="feature-icon mb-3">🧩</div>
             <h5 class="card-title">Listas y proyectos</h5>
@@ -153,7 +151,7 @@
         </div>
       </div>
       <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-soft">
+        <div class="card h-100 shadow-soft hover-lift">
           <div class="card-body">
             <div class="feature-icon mb-3">🔔</div>
             <h5 class="card-title">Recordatorios inteligentes</h5>
@@ -162,7 +160,7 @@
         </div>
       </div>
       <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-soft">
+        <div class="card h-100 shadow-soft hover-lift">
           <div class="card-body">
             <div class="feature-icon mb-3">⏱️</div>
             <h5 class="card-title">Fechas y prioridades</h5>
@@ -170,9 +168,8 @@
           </div>
         </div>
       </div>
-
       <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-soft">
+        <div class="card h-100 shadow-soft hover-lift">
           <div class="card-body">
             <div class="feature-icon mb-3">👥</div>
             <h5 class="card-title">Colaboración</h5>
@@ -181,7 +178,7 @@
         </div>
       </div>
       <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-soft">
+        <div class="card h-100 shadow-soft hover-lift">
           <div class="card-body">
             <div class="feature-icon mb-3">🔐</div>
             <h5 class="card-title">Seguro por diseño</h5>
@@ -190,7 +187,7 @@
         </div>
       </div>
       <div class="col-md-6 col-lg-4">
-        <div class="card h-100 shadow-soft">
+        <div class="card h-100 shadow-soft hover-lift">
           <div class="card-body">
             <div class="feature-icon mb-3">📊</div>
             <h5 class="card-title">Panel de progreso</h5>
@@ -202,7 +199,7 @@
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
+
 <section id="how" class="py-5 bg-body">
   <div class="container">
     <div class="text-center mb-4">
@@ -235,7 +232,6 @@
   </div>
 </section>
 
-<!-- SOCIAL PROOF / TESTIMONIOS -->
 <section class="py-5">
   <div class="container">
     <div class="text-center mb-4">
@@ -244,7 +240,7 @@
     </div>
     <div class="row g-4">
       <div class="col-md-6">
-        <div class="card shadow-soft h-100">
+        <div class="card shadow-soft h-100 hover-lift">
           <div class="card-body">
             <p class="mb-1">“Con Chronos, nuestro equipo de marketing por fin dejó los chats caóticos. Ahora todo fluye.”</p>
             <div class="small text-secondary">— Daniela, Project Manager</div>
@@ -252,7 +248,7 @@
         </div>
       </div>
       <div class="col-md-6">
-        <div class="card shadow-soft h-100">
+        <div class="card shadow-soft h-100 hover-lift">
           <div class="card-body">
             <p class="mb-1">“Me ayudó a separar tareas por contextos: universidad, trabajo y personal. Mucho menos estrés.”</p>
             <div class="small text-secondary">— Luis, Desarrollador</div>
@@ -272,7 +268,7 @@
     </div>
     <div class="row g-4 align-items-stretch">
       <div class="col-md-6">
-        <div class="card h-100 shadow-soft">
+        <div class="card h-100 shadow-soft hover-lift">
           <div class="card-body p-4">
             <h5 class="card-title">Gratis</h5>
             <p class="display-6 fw-bold mb-0">Q0</p>
@@ -282,12 +278,12 @@
               <li class="mb-2"><span class="check me-2">✓</span> Recordatorios básicos</li>
               <li class="mb-2"><span class="check me-2">✓</span> 1 colaborador por proyecto</li>
             </ul>
-            <a href="register.php" class="btn btn-outline-primary w-100">Comenzar</a>
+            <a href="register.php" class="btn btn-outline-info w-100">Comenzar</a>
           </div>
         </div>
       </div>
       <div class="col-md-6">
-        <div class="card h-100 shadow-soft border-primary">
+        <div class="card h-100 shadow-soft border-info hover-lift">
           <div class="card-body p-4">
             <div class="badge-soft mb-2">Más popular</div>
             <h5 class="card-title">Pro</h5>
@@ -299,7 +295,7 @@
               <li class="mb-2"><span class="check me-2">✓</span> Paneles y reportes</li>
               <li class="mb-2"><span class="check me-2">✓</span> Soporte prioritario</li>
             </ul>
-            <a href="register.php" class="btn btn-primary w-100">Probar Pro</a>
+            <a href="register.php" class="btn btn-info w-100 text-white">Probar Pro</a>
           </div>
         </div>
       </div>
@@ -315,10 +311,10 @@
       <p class="text-secondary">Respuestas rápidas antes de empezar.</p>
     </div>
 
-    <div class="accordion faq" id="faqAcc">
+    <div class="accordion" id="faqAcc">
       <div class="accordion-item">
         <h2 class="accordion-header">
-          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#f1">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#f1" aria-expanded="true">
             ¿Necesito tarjeta de crédito para empezar?
           </button>
         </h2>
