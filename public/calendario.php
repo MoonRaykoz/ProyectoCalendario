@@ -46,7 +46,12 @@ $csrf = $_SESSION['_csrf'];
     .cal-day .pill{
       display:inline-flex;align-items:center;gap:.25rem;font-size:.78rem;
       border-radius:999px;padding:.15rem .5rem;border:1px solid var(--bs-border-color);
-      white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis
+      white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;
+      cursor: grab; /* Indicador de que se puede arrastrar */
+      background-color: var(--bs-body-bg);
+    }
+    .cal-day .pill:active {
+      cursor: grabbing; /* Cambia el cursor cuando se está arrastrando */
     }
     .cal-day.muted{opacity:.55}
     .cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:.5rem}
@@ -55,6 +60,108 @@ $csrf = $_SESSION['_csrf'];
     .cal-toolbar .btn{min-width:40px}
     .list-unstyled-tight{margin:0;padding-left:1rem}
     .list-unstyled-tight li{margin:.15rem 0}
+    
+    /* Mejoras para modo oscuro */
+    [data-bs-theme="dark"] {
+      --bs-body-color: #e9ecef;
+      --bs-body-color-rgb: 233, 236, 239;
+      --bs-body-bg: #212529;
+      --bs-body-bg-rgb: 33, 37, 41;
+      --bs-border-color: #495057;
+    }
+    
+    [data-bs-theme="dark"] .cal-day {
+      background-color: var(--bs-dark-bg-subtle);
+      border-color: var(--bs-border-color);
+    }
+    
+    [data-bs-theme="dark"] .cal-day .pill {
+      background-color: rgba(var(--bs-dark-rgb), 0.2);
+      border-color: var(--bs-border-color);
+      color: var(--bs-body-color);
+    }
+    
+    [data-bs-theme="dark"] .cal-day.muted {
+      opacity: 0.6;
+    }
+    
+    [data-bs-theme="dark"] .list-group-item {
+      background-color: var(--bs-dark-bg-subtle);
+      border-color: var(--bs-border-color);
+      color: var(--bs-body-color);
+    }
+    
+    [data-bs-theme="dark"] .bg-secondary-subtle {
+      background-color: rgba(108, 117, 125, 0.3) !important;
+    }
+    
+    [data-bs-theme="dark"] .text-secondary-emphasis {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+    
+    [data-bs-theme="dark"] .form-control,
+    [data-bs-theme="dark"] .form-select {
+      background-color: var(--bs-body-bg);
+      border-color: var(--bs-border-color);
+      color: var(--bs-body-color);
+    }
+    
+    [data-bs-theme="dark"] .form-control:focus,
+    [data-bs-theme="dark"] .form-select:focus {
+      background-color: var(--bs-body-bg);
+      border-color: #86b7fe;
+      color: var(--bs-body-color);
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    [data-bs-theme="dark"] .btn-outline-secondary {
+      color: var(--bs-body-color);
+      border-color: var(--bs-border-color);
+    }
+    
+    [data-bs-theme="dark"] .btn-outline-secondary:hover {
+      color: #000;
+      background-color: var(--bs-secondary);
+      border-color: var(--bs-secondary);
+    }
+    
+    [data-bs-theme="dark"] .text-secondary {
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
+    
+    /* Estilos para elementos siendo arrastrados */
+    .dragging {
+      opacity: 0.5;
+      transform: scale(0.95);
+    }
+    
+    .drop-zone {
+      background-color: rgba(var(--bs-info-rgb), 0.1);
+      border: 2px dashed var(--bs-info);
+    }
+    
+    /* Mejora visual para tareas completadas */
+    .text-decoration-line-through {
+      text-decoration: line-through !important;
+    }
+    
+    /* Mejoras específicas para la barra de herramientas */
+    .cal-toolbar {
+      padding: 1rem;
+      background-color: var(--bs-body-bg);
+      border-radius: 0.5rem;
+      border: 1px solid var(--bs-border-color);
+      margin-bottom: 1rem;
+    }
+    
+    /* Mejoras para los botones en modo oscuro */
+    [data-bs-theme="dark"] .btn {
+      border-color: var(--bs-border-color);
+    }
+    
+    [data-bs-theme="dark"] .btn-info {
+      color: #000;
+    }
   </style>
 </head>
 <body class="bg-body-tertiary">
@@ -64,7 +171,9 @@ $csrf = $_SESSION['_csrf'];
   <a class="btn btn-sm btn-outline-secondary" href="lista.php">
     <i class="bi bi-card-checklist me-1"></i> Lista de tareas
   </a>
-  <button id="btnTheme" class="btn btn-sm btn-outline-secondary" title="Cambiar tema">Tema</button>
+  <button id="btnTheme" class="btn btn-sm btn-outline-secondary" title="Cambiar tema">
+    <i class="bi" id="themeIcon"></i> Tema
+  </button>
   <a class="btn btn-sm btn-outline-danger" href="logout.php">Salir</a>
 </div>
 
@@ -211,10 +320,14 @@ let tasks = [];
 let view = /* fecha centrada*/ new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
 let dayModal, taskModal, editing = false, selectedDate = null;
+let draggedTask = null; // Para almacenar la tarea que se está arrastrando
 
 document.addEventListener('DOMContentLoaded', async () => {
   dayModal  = new bootstrap.Modal(document.getElementById('dayModal'));
   taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
+
+  // Actualizar icono del tema
+  updateThemeIcon();
 
   await loadTasks(); render();
 
@@ -284,6 +397,7 @@ function render() {
     const key = toKey(cursor);
     const div = document.createElement('div');
     div.className = 'cal-day' + (cursor.getMonth()===m ? '' : ' muted');
+    div.setAttribute('data-date', key); // Para identificar la fecha al soltar
     div.innerHTML = `
       <span class="daynum">${cursor.getDate()}</span>
       <span class="badge bg-secondary-subtle text-secondary-emphasis badge-pos">${(byDate.get(key)||[]).length}</span>
@@ -294,13 +408,26 @@ function render() {
     (byDate.get(key)||[]).slice(0,3).forEach(t => {
       const pill = document.createElement('div');
       pill.className = 'pill';
+      pill.setAttribute('draggable', 'true');
+      pill.setAttribute('data-task-id', t.id);
       pill.innerHTML = `
         <span class="me-1 ${t.estado==='completada'?'text-decoration-line-through':''}">${escapeHtml(t.titulo)}</span>
         <span class="badge bg-${prioColor(t.prioridad)}">${t.prioridad||''}</span>
       `;
+      
+      // Eventos de arrastre
+      pill.addEventListener('dragstart', handleDragStart);
+      pill.addEventListener('dragend', handleDragEnd);
+      
       items.append(pill);
     });
 
+    // Eventos para soltar
+    div.addEventListener('dragover', handleDragOver);
+    div.addEventListener('dragenter', handleDragEnter);
+    div.addEventListener('dragleave', handleDragLeave);
+    div.addEventListener('drop', handleDrop);
+    
     div.addEventListener('click', () => openDay(key, byDate.get(key)||[]));
 
     calGrid.append(div);
@@ -327,6 +454,68 @@ function render() {
       btnTog.addEventListener('click', () => toggleTask(t.id));
       noDateList.append(li);
     });
+  }
+}
+
+// Funciones para manejar el arrastre de tareas
+function handleDragStart(e) {
+  draggedTask = this;
+  this.classList.add('dragging');
+  e.dataTransfer.setData('text/plain', this.getAttribute('data-task-id'));
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragEnd(e) {
+  this.classList.remove('dragging');
+  // Remover clases de zona de destino de todos los días
+  document.querySelectorAll('.cal-day').forEach(day => {
+    day.classList.remove('drop-zone');
+  });
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDragEnter(e) {
+  e.preventDefault();
+  this.classList.add('drop-zone');
+}
+
+function handleDragLeave(e) {
+  this.classList.remove('drop-zone');
+}
+
+async function handleDrop(e) {
+  e.preventDefault();
+  this.classList.remove('drop-zone');
+  
+  const taskId = e.dataTransfer.getData('text/plain');
+  const targetDate = this.getAttribute('data-date');
+  
+  if (!taskId || !targetDate) return;
+  
+  try {
+    // Actualizar la fecha de la tarea
+    const r = await fetch('api/tasks.php?action=update_date', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({
+        _csrf: CSRF,
+        id: taskId,
+        fecha_vencimiento: targetDate + 'T12:00' // Establecer hora por defecto
+      })
+    });
+    
+    const j = await r.json();
+    if (!j.success) throw new Error(j.error || 'Error al actualizar la fecha');
+    
+    // Recargar las tareas y renderizar
+    await loadTasks();
+    render();
+  } catch (err) {
+    alert(err.message);
   }
 }
 
@@ -435,6 +624,17 @@ async function delTask(id){
   }catch(e){ alert(e.message); }
 }
 
+// Actualizar icono del tema
+function updateThemeIcon() {
+  const themeIcon = document.getElementById('themeIcon');
+  const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+  if (currentTheme === 'dark') {
+    themeIcon.className = 'bi bi-sun-fill';
+  } else {
+    themeIcon.className = 'bi bi-moon-fill';
+  }
+}
+
 // Helpers
 function toKey(d){ return d.toISOString().slice(0,10); }
 function prioColor(p){ return p==='alta'?'danger':(p==='baja'?'secondary':'primary'); }
@@ -444,7 +644,7 @@ function fmtDate(key){
   return date.toLocaleDateString('es-ES',{weekday:'long', year:'numeric', month:'long', day:'numeric'});
 }
 function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); } }
-function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[c])); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&#034;',"'":'&#039;' }[c])); }
 
 // Cambiar tema (API user.php)
 document.getElementById('btnTheme').addEventListener('click', async () => {
@@ -458,6 +658,7 @@ document.getElementById('btnTheme').addEventListener('click', async () => {
     const j = await r.json();
     if (!j.success) throw new Error(j.error || 'Error');
     document.documentElement.setAttribute('data-bs-theme', j.theme);
+    updateThemeIcon();
   } catch (e) { alert(e.message); }
 });
 </script>

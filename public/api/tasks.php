@@ -111,6 +111,32 @@ try {
       break;
     }
 
+    // NUEVO CASO PARA ACTUALIZAR FECHA AL ARRASTRAR TAREAS
+    case 'update_date': {
+      if ($method !== 'POST') throw new Exception('Method not allowed');
+      if (!isset($_POST['_csrf']) || !hash_equals($_SESSION['_csrf'] ?? '', $_POST['_csrf'])) throw new Exception('CSRF inválido');
+
+      $id = (int)($_POST['id'] ?? 0); if ($id<=0) throw new Exception('ID inválido');
+
+      $stmt = $mysqli->prepare("SELECT usuario_id FROM tareas WHERE id=?");
+      $stmt->bind_param('i',$id); $stmt->execute();
+      $own = $stmt->get_result()->fetch_assoc();
+      if (!$own || (int)$own['usuario_id'] !== $uid) throw new Exception('No autorizado');
+
+      $fecha = null;
+      if (!empty($_POST['fecha_vencimiento'])) {
+        $ts = strtotime($_POST['fecha_vencimiento']); $fecha = $ts ? date('Y-m-d H:i:s', $ts) : null;
+      }
+
+      $stmt = $mysqli->prepare("UPDATE tareas SET fecha_vencimiento=? WHERE id=?");
+      if (!$stmt) throw new Exception('Error al preparar actualización de fecha');
+      $stmt->bind_param('si', $fecha, $id);
+      $stmt->execute();
+
+      echo json_encode(['success'=>true]);
+      break;
+    }
+
     case 'delete': {
       if ($method !== 'POST') throw new Exception('Method not allowed');
       if (!isset($_POST['_csrf']) || !hash_equals($_SESSION['_csrf'] ?? '', $_POST['_csrf'])) throw new Exception('CSRF inválido');

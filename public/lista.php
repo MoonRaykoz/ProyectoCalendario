@@ -17,9 +17,12 @@ $user = current_user();
 //CSRF
 if (empty($_SESSION['_csrf'])) { $_SESSION['_csrf'] = bin2hex(random_bytes(32)); }
 $csrf = $_SESSION['_csrf'];
+
+// Asegurar que el tema tenga un valor por defecto si no está establecido
+$userTheme = $user['tema'] ?? 'light';
 ?>
 <!doctype html>
-<html lang="es" data-bs-theme="<?= htmlspecialchars($user['tema'] ?? 'light') ?>">
+<html lang="es" data-bs-theme="<?= htmlspecialchars($userTheme) ?>">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -32,6 +35,64 @@ $csrf = $_SESSION['_csrf'];
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <meta name="csrf" content="<?= htmlspecialchars($csrf) ?>">
+  
+  <style>
+    /* Transición suave para el cambio de tema */
+body, .navbar, .list-group-item, .modal-content, .form-control, .form-select, .btn {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Ajustes específicos para modo oscuro */
+[data-bs-theme="dark"] {
+  --bs-body-bg: #212529;
+  --bs-body-color: #f8f9fa;
+  --bs-border-color-translucent: rgba(255,255,255,.15);
+}
+
+[data-bs-theme="dark"] .list-group-item {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  border-color: var(--bs-border-color-translucent);
+}
+
+[data-bs-theme="dark"] .modal-content {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+  background-color: #2b3035;
+  color: #f8f9fa;
+  border-color: var(--bs-border-color-translucent);
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+  background-color: #343a40;
+  color: #fff;
+  border-color: #0dcaf0;
+  box-shadow: 0 0 0 .25rem rgba(13, 202, 240, .25);
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary {
+  color: #f8f9fa;
+  border-color: var(--bs-border-color-translucent);
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary:hover {
+  background-color: #495057;
+  border-color: #6c757d;
+}
+
+[data-bs-theme="dark"] .text-secondary {
+  color: #adb5bd !important;
+}
+
+[data-bs-theme="dark"] .text-muted {
+  color: #8b9cb1 !important;
+}
+  </style>
 </head>
 <body class="bg-body-tertiary">
 <nav class="navbar navbar-expand-lg bg-body border-bottom">
@@ -41,7 +102,9 @@ $csrf = $_SESSION['_csrf'];
     </a>
     <div class="ms-auto d-flex align-items-center gap-2">
     <a class="btn btn-sm btn-outline-secondary" href="calendario.php"><i class="bi bi-calendar3 me-1"></i> Calendario</a>
-  <button id="btnTheme" class="btn btn-sm btn-outline-secondary" title="Cambiar tema">Tema</button>
+  <button id="btnTheme" class="btn btn-sm btn-outline-secondary" title="Cambiar tema">
+    <i class="bi <?= $userTheme === 'dark' ? 'bi-sun' : 'bi-moon' ?>"></i>
+  </button>
   <a class="btn btn-sm btn-outline-danger" href="logout.php">Salir</a>
 </div>
   </div>
@@ -146,6 +209,7 @@ const fStatus = document.getElementById('fStatus');
 const fPriority = document.getElementById('fPriority');
 const btnNew = document.getElementById('btnNew');
 const btnSaveOrder = document.getElementById('btnSaveOrder');
+const btnTheme = document.getElementById('btnTheme');
 
 let tasks = [];
 let modal, editing = false;
@@ -459,8 +523,10 @@ function toLocalInput(s) {
 function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }}
 
 // Cambiar tema (guarda en BD vía API user.php)
-document.getElementById('btnTheme').addEventListener('click', async () => {
-  const next = (document.documentElement.getAttribute('data-bs-theme') === 'dark') ? 'light' : 'dark';
+btnTheme.addEventListener('click', async () => {
+  const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+  const next = currentTheme === 'dark' ? 'light' : 'dark';
+  
   try {
     const r = await fetch('api/user.php', {
       method: 'POST',
@@ -469,8 +535,18 @@ document.getElementById('btnTheme').addEventListener('click', async () => {
     });
     const j = await r.json();
     if (!j.success) throw new Error(j.error || 'Error');
-    document.documentElement.setAttribute('data-bs-theme', j.theme);
-  } catch (e) { alert(e.message); }
+    
+    // Actualizar el tema en la interfaz
+    document.documentElement.setAttribute('data-bs-theme', next);
+    
+    // Actualizar el icono del botón
+    const icon = btnTheme.querySelector('i');
+    icon.className = next === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+    
+  } catch (e) { 
+    console.error('Error cambiando tema:', e);
+    alert('Error al cambiar el tema: ' + e.message); 
+  }
 });
 </script>
 </body>
