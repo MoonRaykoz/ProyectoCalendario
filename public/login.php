@@ -104,7 +104,7 @@ $csrf = ensure_csrf_token();
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Iniciar sesión — Chronos</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/litera/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/css/bootstrap.min.css" rel="stylesheet">
 
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -120,7 +120,7 @@ $csrf = ensure_csrf_token();
       <div class="card-body p-4 p-md-5">
         <div class="d-flex align-items-center justify-content-between mb-3">
           <a class="d-flex align-items-center fw-bold text-decoration-none" href="index.php">
-            <img src="assets/img/chronoBig.png" alt="Chronos" height="40" class="me-2">
+            <img src="assets/img/Cro.png" alt="Chronos" height="40" class="me-2">
           </a>
           <a href="register.php" class="small text-secondary">Crear cuenta</a>
         </div>

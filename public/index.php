@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chronos — Organiza tu día sin estrés</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="../assets/style.css" rel="stylesheet">
-  <link rel="icon" type="image/png" sizes="32x32" href="/ProyectoCalendario/assets/icon.png">
+  <link href="assets/css/style.css" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/icon.png">
 
   <meta name="description" content="Chronos: gestor de tareas y proyectos. Organiza tu tiempo con recordatorios inteligentes y paneles de progreso.">
   <meta property="og:title" content="Chronos — Organiza tu día sin estrés">
@@ -22,7 +22,7 @@
 <nav class="navbar navbar-expand-lg bg-body sticky-top py-3" data-aos="fade-down">
   <div class="container">
    <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
-    <img src="/ProyectoCalendario/assets/chronoBig.png" alt="Chronos logo" width="auto" height="40" class="me-2">
+    <img src="assets/img/Cro.png" alt="Chronos logo" width="auto" height="40" class="me-2">
    </a>
   <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
     <span class="navbar-toggler-icon"></span>
@@ -36,7 +36,7 @@
       </ul>
       <div class="d-flex gap-2">
         <a class="btn btn-primary-outline" href="login.php">Iniciar sesión</a>
-        <a class="btn btn-primary" href="register.php">Crear cuenta</a>
+        <a class="btn btn-info text-white btn-lg" href="register.php">Crear cuenta</a>
       </div>
     </div>
   </div>
@@ -46,7 +46,7 @@
   <div class="container py-5">
     <div class="row align-items-center gy-4">
       <div class="col-lg-6" data-aos="fade-right">
-        <div class="badge-pill mb-3">Tu tiempo, bajo control</div>
+        <div class="baadge-pill mb-3">Tu tiempo, bajo control</div>
         <h1 class="display-5 fw-bold mt-3">
           Organiza tus tareas y proyectos con <span class="text-primary-accent">Chronos</span>
         </h1>
@@ -55,7 +55,7 @@
           Menos caos, más resultados.
         </p>
         <div class="d-flex flex-wrap gap-2 mt-3">
-          <a href="register.php" class="btn btn-primary btn-lg">Comenzar gratis</a>
+          <a href="register.php" class="btn btn-info text-white btn-lg">Comenzar gratis</a>
           <a href="#features" class="btn btn-primary-outline btn-lg">Ver características</a>
         </div>
         <div class="d-flex align-items-center gap-3 mt-4 text-secondary small">
@@ -112,11 +112,11 @@
           <img src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=1172&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Focus" class="img-fluid rounded shadow">
         </div>
         <div class="col-lg-6">
-          <h3 class="fw-bold mb-1">Enfócate en lo que importa</h3>
+          <h3 id="gray" class="fw-bold mb-1 text-dark">Enfócate en lo que importa</h3>
           <p class="mb-0 text-secondary">Paneles claros, recordatorios puntuales y colaboración sencilla.</p>
           <div class="d-flex gap-2 mt-3">
-            <a class="btn btn-primary btn-lg" href="register.php">Crear cuenta</a>
-            <a class="btn btn-primary-outline btn-lg" href="#how">Ver cómo funciona</a>
+            <a class="btn btn-info text-white btn-lg" href="register.php">Crear cuenta</a>
+            <a class="btn btn-primary-outline btn-lg text-dark" href="#how">Ver cómo funciona</a>
           </div>
         </div>
       </div>
@@ -295,7 +295,7 @@
               <li class="mb-2"><i class="bi bi-check-lg me-2 text-primary-accent"></i> Paneles y reportes</li>
               <li class="mb-2"><i class="bi bi-check-lg me-2 text-primary-accent"></i> Soporte prioritario</li>
             </ul>
-            <a href="register.php" class="btn btn-primary w-100">Probar Pro</a>
+            <a href="register.php" class="btn btn-info text-white btn-lg w-100">Probar Pro</a>
           </div>
         </div>
       </div>

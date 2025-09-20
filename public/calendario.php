@@ -25,46 +25,331 @@ $csrf = $_SESSION['_csrf'];
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Calendario — Chronos</title>
+  <meta name="description" content="Sistema de gestión de tareas y calendario personal">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/icon.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/litera/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/css/bootstrap.min.css" rel="stylesheet">
   <link href="assets/css/style.css" rel="stylesheet">
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/icon.png">
 
   <meta name="csrf" content="<?= htmlspecialchars($csrf) ?>">
   <style>
-    /* Calendario con grid */
-    .cal-grid{
-      display:grid;grid-template-columns:repeat(7,1fr);gap:.5rem
+    /* Variables CSS para consistencia */
+    :root {
+      --border-radius-sm: 0.375rem;
+      --border-radius-md: 0.5rem;
+      --border-radius-lg: 0.75rem;
+      --transition-speed: 0.2s;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+      --sidebar-width: 280px;
     }
-    .cal-day{
-      background:var(--bs-body-bg);border:1px solid var(--bs-border-color);
-      border-radius:.5rem;min-height:110px;padding:.5rem;position:relative
+
+    /* Layout principal */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
     }
-    .cal-day .daynum{font-weight:600;opacity:.85}
-    .cal-day .items{margin-top:.35rem;display:flex;flex-direction:column;gap:.25rem}
-    .cal-day .pill{
-      display:inline-flex;align-items:center;gap:.25rem;font-size:.78rem;
-      border-radius:999px;padding:.15rem .5rem;border:1px solid var(--bs-border-color);
-      white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;
-      cursor: grab; /* Indicador de que se puede arrastrar */
-      background-color: var(--bs-body-bg);
-    }
-    .cal-day .pill:active {
-      cursor: grabbing; /* Cambia el cursor cuando se está arrastrando */
-    }
-    .cal-day.muted{opacity:.55}
-    .cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:.5rem}
-    .cal-head .w{font-weight:600;opacity:.7;text-transform:capitalize}
-    .badge-pos{position:absolute;right:.5rem;top:.5rem}
-    .cal-toolbar .btn{min-width:40px}
-    .list-unstyled-tight{margin:0;padding-left:1rem}
-    .list-unstyled-tight li{margin:.15rem 0}
     
-    /* Mejoras para modo oscuro */
+    /* Sidebar para filtros */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--bs-body-bg);
+      border-right: 1px solid var(--bs-border-color);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .sidebar-header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--bs-border-color);
+    }
+    
+    .sidebar-section {
+      margin-bottom: 1.5rem;
+    }
+    
+    .sidebar-section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--bs-secondary);
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Contenido principal */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+    }
+    
+    /* Navbar mejorada */
+    .navbar {
+      box-shadow: var(--shadow-sm);
+      padding: 0.75rem 1.5rem;
+    }
+    
+    .navbar-brand {
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    
+    /* Calendario con grid mejorado */
+    .calendar-container {
+      flex: 1;
+      padding: 1.5rem;
+      overflow: auto;
+    }
+    
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.6rem;
+    }
+    
+    .cal-day {
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: var(--border-radius-md);
+      min-height: 140px;
+      padding: 0.75rem;
+      position: relative;
+      transition: all var(--transition-speed) ease;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .cal-day:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .cal-day.today {
+      border: 2px solid var(--bs-info);
+      background-color: rgba(var(--bs-info-rgb), 0.05);
+    }
+    
+    .cal-day .daynum {
+      font-weight: 700;
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+    
+    .cal-day .items {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    
+    .cal-day .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.78rem;
+      border-radius: 999px;
+      padding: 0.2rem 0.6rem;
+      border: 1px solid var(--bs-border-color);
+      white-space: nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: grab;
+      background-color: var(--bs-body-bg);
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .cal-day .pill:hover {
+      transform: scale(1.02);
+    }
+    
+    .cal-day .pill:active {
+      cursor: grabbing;
+      transform: scale(0.98);
+    }
+    
+    .cal-day.muted {
+      opacity: 0.5;
+    }
+    
+    .cal-head {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.6rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .cal-head .w {
+      font-weight: 600;
+      opacity: 0.8;
+      text-transform: capitalize;
+      text-align: center;
+      padding: 0.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .badge-pos {
+      position: absolute;
+      right: 0.75rem;
+      top: 0.75rem;
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+    }
+    
+    /* Toolbar mejorada */
+    .cal-toolbar {
+      padding: 1.25rem;
+      background-color: var(--bs-body-bg);
+      border-radius: var(--border-radius-lg);
+      border: 1px solid var(--bs-border-color);
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .cal-toolbar .btn {
+      min-width: 42px;
+      border-radius: var(--border-radius-sm);
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .cal-toolbar .btn:hover {
+      transform: translateY(-1px);
+    }
+    
+    /* Título del calendario */
+    #calTitle {
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0;
+      color: var(--bs-body-color);
+      font-size: 1.5rem;
+    }
+    
+    /* Mejoras para tareas sin fecha */
+    .no-date-container {
+      background-color: var(--bs-body-bg);
+      border-radius: var(--border-radius-md);
+      border: 1px solid var(--bs-border-color);
+      padding: 1.25rem;
+      margin-top: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    /* Modal mejorado */
+    .modal-content {
+      border-radius: var(--border-radius-lg);
+      border: 1px solid var(--bs-border-color);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .modal-header {
+      border-bottom: 1px solid var(--bs-border-color);
+      padding: 1.25rem;
+    }
+    
+    .modal-body {
+      padding: 1.25rem;
+    }
+    
+    .modal-footer {
+      border-top: 1px solid var(--bs-border-color);
+      padding: 1rem 1.25rem;
+    }
+    
+    .btn {
+      border-radius: var(--border-radius-sm);
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+    
+    /* Formularios mejorados */
+    .form-control, .form-select {
+      border-radius: var(--border-radius-sm);
+      padding: 0.5rem 0.75rem;
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      box-shadow: 0 0 0 0.2rem rgba(var(--bs-info-rgb), 0.25);
+    }
+    
+    /* List group mejorada */
+    .list-group-item {
+      border: 1px solid var(--bs-border-color);
+      padding: 0.75rem 1rem;
+      border-radius: var(--border-radius-sm) !important;
+      margin-bottom: 0.5rem;
+      transition: all var(--transition-speed) ease;
+    }
+    
+    .list-group-item:hover {
+      transform: translateX(2px);
+    }
+    
+    /* Mejoras de botones */
+    .btn-group .btn {
+      border-radius: var(--border-radius-sm);
+    }
+    
+    /* Estilos para elementos siendo arrastrados */
+    .dragging {
+      opacity: 0.7;
+      transform: scale(0.97) rotate(2deg);
+    }
+    
+    .drop-zone {
+      background-color: rgba(var(--bs-info-rgb), 0.1);
+      border: 2px dashed var(--bs-info);
+      transform: scale(1.02);
+    }
+    
+    /* Mejora visual para tareas completadas */
+    .text-decoration-line-through {
+      text-decoration: line-through !important;
+      opacity: 0.7;
+    }
+    
+    /* Quick actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: auto;
+    }
+    
+    /* Toggle sidebar para móviles */
+    .sidebar-toggle {
+      display: none;
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: var(--bs-info);
+      color: white;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    /* Mejoras específicas para modo oscuro */
     [data-bs-theme="dark"] {
-      --bs-body-color: #e9ecef;
-      --bs-body-color-rgb: 233, 236, 239;
+      --bs-body-color: #dee2e6;
+      --bs-body-color-rgb: 222, 226, 230;
       --bs-body-bg: #212529;
       --bs-body-bg-rgb: 33, 37, 41;
       --bs-border-color: #495057;
@@ -82,7 +367,7 @@ $csrf = $_SESSION['_csrf'];
     }
     
     [data-bs-theme="dark"] .cal-day.muted {
-      opacity: 0.6;
+      opacity: 0.5;
     }
     
     [data-bs-theme="dark"] .list-group-item {
@@ -129,32 +414,53 @@ $csrf = $_SESSION['_csrf'];
       color: rgba(255, 255, 255, 0.6) !important;
     }
     
-    /* Estilos para elementos siendo arrastrados */
-    .dragging {
-      opacity: 0.5;
-      transform: scale(0.95);
+    /* FIX: Asegurar que los botones tengan el color correcto en modo oscuro */
+    [data-bs-theme="dark"] .btn-outline-secondary,
+    [data-bs-theme="dark"] .btn-outline-danger {
+      --bs-btn-color: var(--bs-body-color);
+      --bs-btn-border-color: var(--bs-border-color);
+      --bs-btn-hover-color: #000;
+    }
+
+    /* FIX: Asegurar que el texto "Hoy" sea visible en modo oscuro */
+    [data-bs-theme="dark"] #todayBtn {
+      color: var(--bs-body-color) !important;
     }
     
-    .drop-zone {
-      background-color: rgba(var(--bs-info-rgb), 0.1);
-      border: 2px dashed var(--bs-info);
+    [data-bs-theme="dark"] #todayBtn:hover {
+      color: #000 !important;
     }
     
-    /* Mejora visual para tareas completadas */
-    .text-decoration-line-through {
-      text-decoration: line-through !important;
+    /* FIX: Asegurar que los botones de la barra de navegación funcionen en modo oscuro */
+    [data-bs-theme="dark"] .navbar .btn-outline-secondary,
+    [data-bs-theme="dark"] .navbar .btn-outline-danger {
+      --bs-btn-color: #fff;
+      --bs-btn-border-color: #fff;
+      --bs-btn-hover-color: #000;
+      --bs-btn-hover-bg: #fff;
     }
     
-    /* Mejoras específicas para la barra de herramientas */
-    .cal-toolbar {
-      padding: 1rem;
-      background-color: var(--bs-body-bg);
-      border-radius: 0.5rem;
-      border: 1px solid var(--bs-border-color);
-      margin-bottom: 1rem;
+    [data-bs-theme="dark"] .navbar .btn-outline-secondary:hover,
+    [data-bs-theme="dark"] .navbar .btn-outline-danger:hover {
+      color: #000 !important;
     }
     
-    /* Mejoras para los botones en modo oscuro */
+    /* FIX: Asegurar que el título del calendario sea visible */
+    [data-bs-theme="dark"] #calTitle {
+      color: var(--bs-body-color);
+    }
+    
+    /* FIX: Asegurar que los textos secundarios sean visibles */
+    [data-bs-theme="dark"] .text-secondary {
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
+    
+    /* FIX: Asegurar que los elementos de la lista sin fecha sean visibles */
+    [data-bs-theme="dark"] .list-unstyled-tight .text-secondary {
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
+    
+    /* Mejoras para botones en modo oscuro */
     [data-bs-theme="dark"] .btn {
       border-color: var(--bs-border-color);
     }
@@ -162,97 +468,260 @@ $csrf = $_SESSION['_csrf'];
     [data-bs-theme="dark"] .btn-info {
       color: #000;
     }
+    
+    /* Responsividad mejorada */
+    @media (max-width: 992px) {
+      .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        z-index: 999;
+        overflow-y: auto;
+      }
+      
+      .sidebar.active {
+        left: 0;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .sidebar-toggle {
+        display: flex;
+      }
+      
+      .cal-day {
+        min-height: 110px;
+        padding: 0.6rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .cal-grid {
+        gap: 0.4rem;
+      }
+      
+      .cal-day {
+        min-height: 90px;
+        padding: 0.5rem;
+      }
+      
+      .cal-day .daynum {
+        font-size: 0.85rem;
+      }
+      
+      .badge-pos {
+        right: 0.5rem;
+        top: 0.5rem;
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+      }
+      
+      .cal-head .w {
+        font-size: 0.8rem;
+        padding: 0.4rem;
+      }
+      
+      .cal-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .cal-toolbar .btn-group {
+        align-self: center;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .cal-day {
+        min-height: 80px;
+      }
+      
+      .cal-day .pill {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.4rem;
+      }
+      
+      .navbar-brand {
+        font-size: 1rem;
+      }
+      
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body class="bg-body-tertiary">
-<nav class="navbar navbar-expand-lg bg-body border-bottom">
-  <div class="container">
-   <div class="ms-auto d-flex align-items-center gap-2">
-  <a class="btn btn-sm btn-outline-secondary" href="lista.php">
-    <i class="bi bi-card-checklist me-1"></i> Lista de tareas
-  </a>
-  <button id="btnTheme" class="btn btn-sm btn-outline-secondary" title="Cambiar tema">
-    <i class="bi" id="themeIcon"></i> Tema
-  </button>
-  <a class="btn btn-sm btn-outline-danger" href="logout.php">Salir</a>
+<div class="app-container">
+  <!-- Sidebar para filtros y acciones rápidas -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h5 class="sidebar-section-title mb-0">Filtros y Acciones</h5>
+    </div>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Búsqueda</div>
+      <input id="q" class="form-control mb-3" placeholder="Buscar tareas...">
+    </div>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Filtros</div>
+      <div class="mb-3">
+        <label class="form-label">Estado</label>
+        <select id="fStatus" class="form-select">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendientes</option>
+          <option value="completada">Completadas</option>
+        </select>
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Prioridad</label>
+        <select id="fPriority" class="form-select">
+          <option value="">Todas las prioridades</option>
+          <option value="alta">Alta</option>
+          <option value="media">Media</option>
+          <option value="baja">Baja</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Vista Rápida</div>
+      <div class="list-group">
+        <a href="#" class="list-group-item align-items-left">
+          Tareas de hoy
+          <span class="badge bg-primary rounded-pill" id="today-count">0</span>
+        </a>
+        <a href="#" class="list-group-item align-items-left">
+          Tareas pendientes
+          <span class="badge bg-warning rounded-pill" id="pending-count">0</span>
+        </a>
+        <a href="#" class="list-group-item align-items-left">
+          Tareas completadas
+          <span class="badge bg-success rounded-pill" id="completed-count">0</span>
+        </a>
+      </div>
+    </div>
+    
+    <div class="quick-actions">
+      <button id="btnNew" class="btn btn-info text-white">
+        <i class="bi bi-plus-circle me-1"></i> Nueva
+      </button>
+      <a id="todayBtn" class="btn btn-outline-primary" href="lista.php">
+        <i class="bi bi-calendar-event me-1"></i> Lista de Tareas
+      </a>
+    </div>
+  </aside>
+
+  <!-- Contenido principal -->
+  <div class="main-content">
+    <nav class="navbar bg-body border-bottom">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="index.php">
+          <img src="assets/img/Cro.png" alt="Chronos" height="32" class="me-2">
+        </a>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-secondary d-lg-none" id="mobileFilterToggle">
+            <i class="bi bi-funnel"></i>
+          </button>
+          <a class="btn btn-sm" href="lista.php">
+            <i class="bi bi-card-checklist me-1"></i> Lista
+          </a>
+          <button id="btnTheme" class="btn btn-sm" title="Cambiar tema">
+            <i class="bi" id="themeIcon"></i> 
+          </button>
+          <a class="btn btn-sm btn-outline-danger" href="logout.php">Salir</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="calendar-container">
+      <!-- Toolbar mejorada -->
+      <div class="cal-toolbar">
+        <div class="btn-group">
+          <button class="btn btn-sm" id="prevMonth" title="Mes anterior">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <h1 class="h4 mb-0 mx-3" id="calTitle"></h1>
+          <button class="btn btn-sm" id="nextMonth" title="Mes siguiente">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+        
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <span class="badge bg-info me-2">
+            <i class="bi bi-calendar-check me-1"></i>
+            <span id="total-tasks">0</span> tareas
+          </span>
+        </div>
+      </div>
+
+      <!--Parte de arriba de dias -->
+      <div class="cal-head mb-3">
+        <div class="w text-center">Lun</div>
+        <div class="w text-center">Mar</div>
+        <div class="w text-center">Mié</div>
+        <div class="w text-center">Jue</div>
+        <div class="w text-center">Vie</div>
+        <div class="w text-center">Sáb</div>
+        <div class="w text-center">Dom</div>
+      </div>
+
+      <!-- Grid -->
+      <div id="calGrid" class="cal-grid"></div>
+
+      <!-- Tareas sin fecha -->
+      <div class="no-date-container">
+        <h2 class="h6 text-secondary mb-3">
+          <i class="bi bi-calendar-x me-1"></i> Tareas sin fecha
+        </h2>
+        <ul id="noDateList" class="list-unstyled mb-0"></ul>
+      </div>
+    </div>
+  </div>
 </div>
 
-  </div>
-</nav>
+<!-- Botón para toggle sidebar en móviles -->
+<button class="sidebar-toggle" id="sidebarToggle">
+  <i class="bi bi-funnel"></i>
+</button>
 
-<main class="container py-4">
-  <!-- Toolbar -->
-  <div class="cal-toolbar d-flex flex-wrap align-items-center gap-2 mb-3">
-    <div class="btn-group">
-      <button class="btn btn-outline-secondary" id="prevMonth" title="Mes anterior">«</button>
-      <button class="btn btn-outline-secondary" id="todayBtn">Hoy</button>
-      <button class="btn btn-outline-secondary" id="nextMonth" title="Mes siguiente">»</button>
-    </div>
-    <h1 class="h4 mb-0 ms-2" id="calTitle"></h1>
-
-    <div class="ms-auto d-flex gap-2 flex-wrap">
-      <input id="q" class="form-control" placeholder="Buscar (título, descripción, tags)">
-      <select id="fStatus" class="form-select" style="max-width: 180px;">
-        <option value="">Estado: todos</option>
-        <option value="pendiente">Pendientes</option>
-        <option value="completada">Completadas</option>
-      </select>
-      <select id="fPriority" class="form-select" style="max-width: 180px;">
-        <option value="">Prioridad: todas</option>
-        <option value="alta">Alta</option>
-        <option value="media">Media</option>
-        <option value="baja">Baja</option>
-      </select>
-      <button id="btnNew" class="btn btn-info text-white">Nueva tarea</button>
-    </div>
-  </div>
-
-  <!--Parte de arriba de dias -->
-  <div class="cal-head mb-2">
-    <div class="w text-center">Lun</div>
-    <div class="w text-center">Mar</div>
-    <div class="w text-center">Mié</div>
-    <div class="w text-center">Jue</div>
-    <div class="w text-center">Vie</div>
-    <div class="w text-center">Sáb</div>
-    <div class="w text-center">Dom</div>
-  </div>
-
-  <!-- Grid -->
-  <div id="calGrid" class="cal-grid"></div>
-
-  <!-- Tareas sin fecha por alguna razon-->
-  <div class="mt-4">
-    <h2 class="h6 text-secondary">Tareas sin fecha</h2>
-    <ul id="noDateList" class="list-unstyled-tight"></ul>
-  </div>
-</main>
-
-<!-- Día -->
+<!-- Modal Día mejorado -->
 <div class="modal fade" id="dayModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 id="dayTitle" class="modal-title">Tareas del día</h5>
+        <h5 id="dayTitle" class="modal-title">
+          <i class="bi bi-calendar-day me-2"></i> Tareas del día
+        </h5>
         <button class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
-        <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-3">
           <div class="small text-secondary" id="dayMeta"></div>
-          <button id="addOnDay" class="btn btn-sm btn-info text-white">Añadir tarea en este día</button>
+          <button id="addOnDay" class="btn btn-sm btn-info text-white">
+            <i class="bi bi-plus-circle me-1"></i> Añadir tarea
+          </button>
         </div>
-        <ul id="dayTasks" class="list-group"></ul>
+        <ul id="dayTasks" class="list-group list-group-flush"></ul>
       </div>
     </div>
   </div>
 </div>
 
-<!--Crear/editar -->
+<!-- Modal Crear/editar mejorado -->
 <div class="modal fade" id="taskModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <form id="taskForm" class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="taskTitle">Nueva tarea</h5>
+        <h5 class="modal-title" id="taskTitle">
+          <i class="bi bi-card-checklist me-2"></i> Nueva tarea
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
@@ -294,7 +763,9 @@ $csrf = $_SESSION['_csrf'];
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
-        <button class="btn btn-info text-white" type="submit" id="btnSave">Guardar</button>
+        <button class="btn btn-info text-white" type="submit" id="btnSave">
+          <i class="bi bi-check-circle me-1"></i> Guardar
+        </button>
       </div>
     </form>
   </div>
@@ -302,6 +773,7 @@ $csrf = $_SESSION['_csrf'];
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// El código JavaScript permanece igual con pequeñas adaptaciones para la nueva UI
 const CSRF = document.querySelector('meta[name="csrf"]').content;
 const calTitle = document.getElementById('calTitle');
 const calGrid  = document.getElementById('calGrid');
@@ -322,6 +794,15 @@ let view = /* fecha centrada*/ new Date(new Date().getFullYear(), new Date().get
 let dayModal, taskModal, editing = false, selectedDate = null;
 let draggedTask = null; // Para almacenar la tarea que se está arrastrando
 
+// Toggle sidebar en móviles
+document.getElementById('sidebarToggle').addEventListener('click', function() {
+  document.getElementById('sidebar').classList.toggle('active');
+});
+
+document.getElementById('mobileFilterToggle').addEventListener('click', function() {
+  document.getElementById('sidebar').classList.toggle('active');
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
   dayModal  = new bootstrap.Modal(document.getElementById('dayModal'));
   taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
@@ -329,7 +810,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Actualizar icono del tema
   updateThemeIcon();
 
-  await loadTasks(); render();
+  await loadTasks(); 
+  render();
+  updateTaskCounts();
 
   q.addEventListener('input', debounce(reload, 300));
   fStatus.addEventListener('change', reload);
@@ -352,7 +835,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('addOnDay').addEventListener('click', () => openCreateOnDay(selectedDate));
 });
 
-async function reload(){ await loadTasks(); render(); }
+async function reload(){ 
+  await loadTasks(); 
+  render(); 
+  updateTaskCounts();
+}
+
+function updateTaskCounts() {
+  const today = new Date().toISOString().slice(0, 10);
+  const todayTasks = tasks.filter(t => t.fecha_vencimiento && t.fecha_vencimiento.startsWith(today));
+  const pendingTasks = tasks.filter(t => t.estado === 'pendiente');
+  const completedTasks = tasks.filter(t => t.estado === 'completada');
+  
+  document.getElementById('today-count').textContent = todayTasks.length;
+  document.getElementById('pending-count').textContent = pendingTasks.length;
+  document.getElementById('completed-count').textContent = completedTasks.length;
+  document.getElementById('total-tasks').textContent = tasks.length;
+}
 
 async function loadTasks() {
   const params = new URLSearchParams();
@@ -393,10 +892,13 @@ function render() {
 
   // Render 42 días
   let cursor = new Date(start);
+  const today = new Date().toISOString().slice(0, 10);
+  
   for (let i=0;i<42;i++){
     const key = toKey(cursor);
     const div = document.createElement('div');
     div.className = 'cal-day' + (cursor.getMonth()===m ? '' : ' muted');
+    if (key === today) div.classList.add('today');
     div.setAttribute('data-date', key); // Para identificar la fecha al soltar
     div.innerHTML = `
       <span class="daynum">${cursor.getDate()}</span>
@@ -441,12 +943,19 @@ function render() {
   } else {
     nodate.forEach(t => {
       const li = document.createElement('li');
+      li.className = 'mb-2 p-2 bg-primary rounded';
       li.innerHTML = `
-        <span class="${t.estado==='completada'?'text-decoration-line-through text-secondary':''}">${escapeHtml(t.titulo)}</span>
-        <span class="badge bg-${prioColor(t.prioridad)} ms-1">${t.prioridad}</span>
-        <button class="btn btn-sm btn-outline-secondary ms-2">Editar</button>
-        <button class="btn btn-sm btn-outline-danger ms-1">Borrar</button>
-        <button class="btn btn-sm btn-outline-secondary ms-1">${t.estado==='pendiente'?'Completar':'Reabrir'}</button>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="${t.estado==='completada'?'text-decoration-line-through text-secondary':''}">${escapeHtml(t.titulo)}</span>
+            <span class="badge bg-${prioColor(t.prioridad)} ms-1">${t.prioridad}</span>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-outline-sm">Editar</button>
+            <button class="btn btn-sm btn-outline-danger ms-1">Borrar</button>
+            <button class="btn btn-sm btn-outline-success">${t.estado==='pendiente'?'Completar':'Reabrir'}</button>
+          </div>
+        </div>
       `;
       const [btnEdit, btnDel, btnTog] = li.querySelectorAll('button');
       btnEdit.addEventListener('click', () => openEdit(t));
@@ -456,6 +965,9 @@ function render() {
     });
   }
 }
+
+// Resto del código JavaScript permanece igual...
+// [Todas las funciones restantes se mantienen igual que en el código original]
 
 // Funciones para manejar el arrastre de tareas
 function handleDragStart(e) {
@@ -514,6 +1026,7 @@ async function handleDrop(e) {
     // Recargar las tareas y renderizar
     await loadTasks();
     render();
+    updateTaskCounts();
   } catch (err) {
     alert(err.message);
   }
@@ -593,7 +1106,9 @@ async function submitTaskForm(e){
     const j = await r.json();
     if (!j.success) throw new Error(j.error || 'Error');
     taskModal.hide();
-    await loadTasks(); render();
+    await loadTasks(); 
+    render();
+    updateTaskCounts();
   } catch (err) { alert(err.message); }
 }
 
@@ -606,7 +1121,9 @@ async function toggleTask(id){
     });
     const j = await r.json();
     if(!j.success) throw new Error(j.error||'Error');
-    await loadTasks(); render();
+    await loadTasks(); 
+    render();
+    updateTaskCounts();
   }catch(e){ alert(e.message); }
 }
 
@@ -620,7 +1137,9 @@ async function delTask(id){
     });
     const j = await r.json();
     if(!j.success) throw new Error(j.error||'Error');
-    await loadTasks(); render();
+    await loadTasks(); 
+    render();
+    updateTaskCounts();
   }catch(e){ alert(e.message); }
 }
 

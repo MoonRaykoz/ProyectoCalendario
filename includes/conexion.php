@@ -10,7 +10,7 @@ $db   = "proyecto_calendario";
 $mysqli = new mysqli($host, $user, $pass, $db, $port);
 
 // Verificar conexión
-if ($mysqli->connect_errno) {
+if ($mysqli->connect_error) {
     die("Error de conexión: " . $mysqli->connect_error);
 }
 

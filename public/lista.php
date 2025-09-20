@@ -28,10 +28,10 @@ $userTheme = $user['tema'] ?? 'light';
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mis tareas — Chronos</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/litera/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/css/bootstrap.min.css" rel="stylesheet">
   <link href="assets/css/style.css" rel="stylesheet">
 
-  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon/logo.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <meta name="csrf" content="<?= htmlspecialchars($csrf) ?>">
@@ -98,11 +98,11 @@ body, .navbar, .list-group-item, .modal-content, .form-control, .form-select, .b
 <nav class="navbar navbar-expand-lg bg-body border-bottom">
   <div class="container">
     <a class="navbar-brand fw-bold d-flex align-items-center" href="index.php">
-      <img src="assets/img/chronoBig.png" alt="Chronos" height="32" class="me-2">
+      <img src="assets/img/Cro.png" alt="Chronos" height="32" class="me-2">
     </a>
     <div class="ms-auto d-flex align-items-center gap-2">
-    <a class="btn btn-sm btn-outline-secondary" href="calendario.php"><i class="bi bi-calendar3 me-1"></i> Calendario</a>
-  <button id="btnTheme" class="btn btn-sm btn-outline-secondary" title="Cambiar tema">
+    <a class="btn btn-sm" href="calendario.php"><i class="bi bi-calendar3 me-1"></i> Calendario</a>
+    <button id="btnTheme" class="btn btn-sm" title="Cambiar tema">
     <i class="bi <?= $userTheme === 'dark' ? 'bi-sun' : 'bi-moon' ?>"></i>
   </button>
   <a class="btn btn-sm btn-outline-danger" href="logout.php">Salir</a>
@@ -112,7 +112,7 @@ body, .navbar, .list-group-item, .modal-content, .form-control, .form-select, .b
 
 <main class="container py-4">
   <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
-    <h1 class="h4 mb-0">Mis tareas</h1>
+    <h1 class="h4 mb-0 text-secondary">Mis tareas</h1>
     <div class="d-flex gap-2">
       <input id="q" class="form-control" placeholder="Buscar (título, descripción, tags)">
       <select id="fStatus" class="form-select" style="max-width: 180px;">
@@ -127,10 +127,10 @@ body, .navbar, .list-group-item, .modal-content, .form-control, .form-select, .b
         <option value="baja">Baja</option>
       </select>
       <button id="btnNew" class="btn btn-info text-white">Nueva tarea</button>
-      <button id="btnExport" class="btn btn-outline-secondary">Exportar CSV</button>
+      <button id="btnExport" class="btn btn-sm">Exportar CSV</button>
       <div class="form-check form-switch align-self-center">
     <input class="form-check-input" type="checkbox" id="notifyToggle">
-    <label class="form-check-label" for="notifyToggle">Notificaciones</label>
+    <label class="h6 text-secondary" for="notifyToggle">Notificaciones</label>
     </div>
     </div>
   </div>
@@ -142,7 +142,7 @@ body, .navbar, .list-group-item, .modal-content, .form-control, .form-select, .b
   <ul id="taskList" class="list-group shadow-sm"></ul>
 
   <div class="text-end mt-3">
-    <button id="btnSaveOrder" class="btn btn-outline-secondary btn-sm">Guardar orden</button>
+    <button id="btnSaveOrder" class="btn btn-sm">Guardar orden</button>
   </div>
 </main>
 
@@ -192,7 +192,7 @@ body, .navbar, .list-group-item, .modal-content, .form-control, .form-select, .b
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-sm" data-bs-dismiss="modal" type="button">Cancelar</button>
         <button class="btn btn-info text-white" type="submit" id="btnSave">Guardar</button>
       </div>
     </form>
@@ -442,9 +442,9 @@ function render() {
     const actions = document.createElement('div');
     actions.className = 'btn-group btn-group-sm';
     actions.innerHTML = `
-      <button class="btn btn-outline-secondary" title="Editar"><i class="bi bi-pencil"></i></button>
+      <button class="btn btn-sm" title="Editar"><i class="bi bi-pencil"></i></button>
       <button class="btn btn-outline-danger" title="Borrar"><i class="bi bi-trash"></i></button>
-      <button class="btn btn-outline-secondary" title="Arrastrar para reordenar"><i class="bi bi-arrows-move"></i></button>
+      <button class="btn btn-sm-secondary" title="Arrastrar para reordenar"><i class="bi bi-arrows-move"></i></button>
     `;
     const [btnEdit, btnDel] = actions.querySelectorAll('button');
     btnEdit.addEventListener('click', () => openEdit(t));
